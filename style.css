@@ -10,4 +10,7 @@
     height: 100px;
     width: 100px;
     background: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
