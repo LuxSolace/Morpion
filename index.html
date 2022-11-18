@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <form id="form">
+
+        <fieldset>
+            <label for="first-player-name">Nom joueur 1</label>
+            <input type="text" name="FirstPlayerName" value="Player One" id="first-player-name">
+            <label for="first-player-marker">Marqueur joueur 1</label>
+            <input type="radio" name="marker" value="O" checked id="first-player-marker">0
+            <input type="radio" name="marker" value="X">X
+        </fieldset>
+    
+        <fieldset>
+            <label for="second-player-name">Nom joueur 2</label>
+            <input type="text" name="secondPlayerName" id="second-player-name" value="Player Two">
+        </fieldset>
+
+        <input type="submit" id="submit-btn">
+
+    </form>
+
+    <div id="board-container">
+    </div>
+    
+    <button onclick="test()">Test</button>
+
+</body>
+
+<script src="./script.js"></script>
+</html>

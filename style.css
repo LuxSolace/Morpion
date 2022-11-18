@@ -1,0 +1,13 @@
+#board-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 20px;
+    width: min-content;
+}
+
+#board-container div {
+    height: 100px;
+    width: 100px;
+    background: red;
+}
