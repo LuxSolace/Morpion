@@ -79,10 +79,11 @@ const gameController = (() => {
     let playerOne = {};
     let playerTwo = {};
     let currentPlayer;
+    let turnNumber = 0;
 
     const createPlayer = (formData) => {
         playerOne = Player(formData.get("firstPlayerName"), formData.get("marker"), true);
-        playerTwo = Player(formData.get("secondPlayerName"), playerOne.marker === "O" ? "X" : "O", !playerOne.getTurn());
+        playerTwo = Player(formData.get("secondPlayerName"), playerOne.getMarker() === "O" ? "X" : "O", !playerOne.getTurn());
     }
 
     const startGame = (formData) => {
@@ -99,7 +100,33 @@ const gameController = (() => {
     };
 
     const playRound = (divClicked) => {
+        turnNumber ++;
         getCurrentPlayer();
+        divClicked.innerHTML = currentPlayer.getMarker();
+        currentPlayer.board[divClicked.dataset.arrayIndex] = 1;
+        if (turnNumber >= 5) checkWinner();
+        playerOne.changeTurn();
+        playerTwo.changeTurn();
+    }
+
+    const checkWinner = () => {
+        console.log(compareNestedArray(gameBoard.winningCombo, currentPlayer.getBoard()));
+    }
+
+    function compareNestedArray(nestedArr, arr) {
+        let result;
+
+        for (let i = 0; i < nestedArr.length; i++) {
+            result = nestedArr[i].every((element, index) => {
+                return element === arr[index]
+            })
+
+            if (result === true) {
+                break;
+            }
+        }
+    
+        return result;
     }
 
     return {startGame, playRound}
@@ -128,22 +155,3 @@ const domElement = (() => {
 
     return {form, boardContainer, createBoard}
 })();
-
-function compareNestedArray(nestedArr, arr) {
-
-    let result;
-
-    for (let i = 0; i < nestedArr.length; i++) {
-
-        result = nestedArr[i].every((element, index) => {
-            return element === arr[index]
-        })
-
-        if (result === true) {
-            break;
-        }
-
-    }
-
-    return result;
-}
