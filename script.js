@@ -3,14 +3,34 @@
 const Player = (name, marker, isTheirTurn) => {
     let score = 0;
     let board = [
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0
+        "", "", "",
+        "", "", "",
+        "", "", ""
     ];
 
     const changeTurn = () => {
         isTheirTurn = !isTheirTurn;
     };
+
+    const increaseScore = () => {
+        score ++
+    }
+
+    const resetScore = () => {
+        score = 0
+    }
+
+    const changeBoard = (index, marker) => {
+        board[index] = marker
+    }
+
+    const resetBoard = () => {
+        board = [
+            "", "", "",
+            "", "", "",
+            "", "", ""
+        ];
+    }
 
     const getName = () => name;
     const getMarker = () => marker;
@@ -18,10 +38,11 @@ const Player = (name, marker, isTheirTurn) => {
     const getBoard = () => board;
     const getTurn = () => isTheirTurn;
 
-    return {getName, getMarker, getScore, getBoard, board, getTurn, changeTurn}
+    return {getName, getMarker, getScore, getBoard, getTurn, changeBoard, changeTurn, increaseScore, resetScore, resetBoard}
 };
 
 const gameBoard = (() => {
+
     let board = [
         "", "", "", 
         "", "", "",
@@ -29,49 +50,31 @@ const gameBoard = (() => {
     ];
 
     const winningCombo = [
-        [
-            1, 1, 1,
-            0, 0, 0,
-            0, 0, 0
-        ], 
-        [
-            0, 0, 0,
-            1, 1, 1,
-            0, 0, 0
-        ], 
-        [
-            0, 0, 0,
-            0, 0, 0,
-            1, 1, 1
-        ],
-        [
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0
-        ],
-        [
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0
-        ],
-        [
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1
-        ],
-        [
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, 1
-        ],
-        [
-            0, 0, 1,
-            0, 1, 0,
-            1, 0, 0
-        ]
+        [0, 1, 2], 
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
     ];
 
-    return {board, winningCombo}
+    const resetBoard = () => {
+        board = [
+            "", "", "", 
+            "", "", "",
+            "", "", ""
+        ];
+    }
+
+    const changeBoard = (index, marker) => {
+        board[index] = marker
+    }
+
+    const getBoard = () => board;
+
+    return {changeBoard, winningCombo, resetBoard, getBoard}
 })();
 
 const gameController = (() => {
@@ -80,6 +83,7 @@ const gameController = (() => {
     let playerTwo = {};
     let currentPlayer;
     let turnNumber = 0;
+    let winner = false;
 
     const createPlayer = (formData) => {
         playerOne = Player(formData.get("firstPlayerName"), formData.get("marker"), true);
@@ -92,44 +96,91 @@ const gameController = (() => {
     }
 
     const getCurrentPlayer = () => {
-        if (playerOne.getTurn() === true) {
-            currentPlayer = playerOne
-        } else {
-            currentPlayer = playerTwo
-        }
+        currentPlayer = playerOne.getTurn() ?  playerOne : playerTwo;
     };
 
-    const playRound = (divClicked) => {
-        turnNumber ++;
-        getCurrentPlayer();
-        divClicked.innerHTML = currentPlayer.getMarker();
-        currentPlayer.board[divClicked.dataset.arrayIndex] = 1;
-        if (turnNumber >= 5) checkWinner();
+    const changeTurn = () => {
         playerOne.changeTurn();
         playerTwo.changeTurn();
     }
 
-    const checkWinner = () => {
-        console.log(compareNestedArray(gameBoard.winningCombo, currentPlayer.getBoard()));
+    const markBoard = (divClicked) => {
+        currentPlayer.changeBoard(divClicked.dataset.arrayIndex, 1)
+        gameBoard.changeBoard(divClicked.dataset.arrayIndex, currentPlayer.getMarker());
+        domElement.refreshBoard();
     }
 
-    function compareNestedArray(nestedArr, arr) {
-        let result;
+    const gameReset = () => {
 
-        for (let i = 0; i < nestedArr.length; i++) {
-            result = nestedArr[i].every((element, index) => {
-                return element === arr[index]
-            })
+        gameBoard.resetBoard();
+        domElement.refreshBoard();
+        playerOne.resetBoard();
+        playerTwo.resetBoard();
+        winner = false;
+        turnNumber = 0;
 
-            if (result === true) {
-                break;
+    }
+
+    const playRound = (divClicked) => {
+
+        if (divClicked.innerHTML === "" && winner === false) {
+            getCurrentPlayer();
+            turnNumber ++;
+            markBoard(divClicked);
+
+            if (turnNumber >= 5) winner = checkWinner();
+
+            if (winner === true && currentPlayer.getScore() < 3) {
+                declareWinner();
+                gameReset();
             }
+
+            if (winner === false && turnNumber === 9) {
+                declareTie();
+            }
+
+            if (winner === true && currentPlayer.getScore() === 3) {
+                let userChoice = confirm("Play again ?");
+                if (userChoice) { 
+                    gameReset(); 
+                    playerOne.resetScore();
+                    playerTwo.resetScore();
+                }
+            }
+
+            changeTurn();
         }
-    
+
+    }
+
+    const declareTie = () => {
+        alert("it's a tie !");
+        gameReset();
+    }
+
+    const declareWinner = () => {
+        alert(`${currentPlayer.getName()} a gagné !!!`);
+        currentPlayer.increaseScore();
+    }
+
+    const checkWinner = () => {
+
+        let result = false;
+        let board = currentPlayer.getBoard();
+
+        gameBoard.winningCombo.forEach(element => {
+            if (board[element[0]] != "" && 
+                board[element[1]] != "" &&
+                board[element[2]]) {
+                result = true 
+            }
+        })
+
         return result;
     }
 
     return {startGame, playRound}
+
 })();
 
 const domElement = (() => {
@@ -144,7 +195,7 @@ const domElement = (() => {
 
     const createBoard = () => {
         let gameBoardHtml = ``;
-        gameBoard.board.forEach((item, index) => {
+        gameBoard.getBoard().forEach((item, index) => {
             gameBoardHtml += `<div 
             data-array-index="${index}"
             onclick="gameController.playRound(this)"
@@ -153,5 +204,11 @@ const domElement = (() => {
         boardContainer.innerHTML = gameBoardHtml;
     };
 
-    return {form, boardContainer, createBoard}
-})();
+    const refreshBoard = () => {
+        gameBoard.getBoard().forEach((item, index) => {
+            document.querySelector(`[data-array-index="${index}"]`).innerHTML = item;
+        })
+    }
+
+    return {createBoard, refreshBoard}
+})(); 
